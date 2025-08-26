@@ -1,0 +1,52 @@
+{
+  "users": [
+    {
+      "id": "u_admin",
+      "name": "Admin",
+      "email": "admin@example.com",
+      "password": "admin123",
+      "role": "admin"
+    },
+    {
+      "id": "u_alice",
+      "name": "Alice",
+      "email": "alice@example.com",
+      "password": "pass123",
+      "role": "user"
+    }
+  ],
+  "books": [
+    {
+      "id": "b_silent_pages",
+      "title": "The Silent Pages",
+      "author": "A. Grey",
+      "description": "A mystery novel about lost letters.",
+      "createdAt": 1710000000000
+    },
+    {
+      "id": "b_neon_skies",
+      "title": "Neon Skies",
+      "author": "K. Vale",
+      "description": "Cyberpunk adventures over a neon city.",
+      "createdAt": 1710003600000
+    },
+    {
+      "id": "b_0zecmjd0",
+      "createdAt": 1756217911661,
+      "title": "Hello",
+      "author": "Howru",
+      "description": "wtfff"
+    }
+  ],
+  "reviews": [
+    {
+      "id": "r1",
+      "bookId": "b_silent_pages",
+      "userId": "u_alice",
+      "rating": 4,
+      "text": "Loved the pacing and the twist!",
+      "createdAt": 1710004000000
+    }
+  ],
+  "currentUserId": "u_admin"
+}
