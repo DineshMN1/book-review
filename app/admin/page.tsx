@@ -4,19 +4,17 @@ import { addBook, isAdmin } from '@/lib/store';
 import { useRouter } from 'next/navigation';
 import { useCallback, useMemo, useState } from 'react';
 import Link from 'next/link';
-
-// lazy-load backup UI for client only
-
+import ReviewInsights from '@/components/ReviewInsights';
 
 export default function AdminPage() {
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
   const [description, setDescription] = useState('');
+  const [releaseAt, setReleaseAt] = useState<string>(''); // datetime-local
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const router = useRouter();
 
-  // if not admin, show gentle hint to login as admin
   if (!isAdmin()) {
     return (
       <div className="max-w-lg">
@@ -39,21 +37,32 @@ export default function AdminPage() {
       setBusy(true);
       setError('');
       if (!title.trim() || !author.trim()) throw new Error('Title and author are required');
+
+      let releaseMs: number | undefined = undefined;
+      if (releaseAt.trim()) {
+        const ms = new Date(releaseAt).getTime();
+        if (!Number.isFinite(ms)) throw new Error('Invalid release date/time');
+        releaseMs = ms;
+      }
+
       addBook({
         title: title.trim(),
         author: author.trim(),
         description: description.trim() || undefined,
+        releaseAt: releaseMs,
       });
+
       setTitle('');
       setAuthor('');
       setDescription('');
+      setReleaseAt('');
       router.push('/');
     } catch (e: any) {
       setError(e?.message || 'Failed');
     } finally {
       setBusy(false);
     }
-  }, [title, author, description, router]);
+  }, [title, author, description, releaseAt, router]);
 
   function onKeyDown(e: React.KeyboardEvent) {
     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
@@ -63,7 +72,7 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="max-w-lg space-y-6">
+    <div className="max-w-4xl space-y-6">
       <div>
         <h1 className="text-2xl font-bold mb-4">Publish a new book</h1>
         <div className="card space-y-3" onKeyDown={onKeyDown}>
@@ -94,6 +103,18 @@ export default function AdminPage() {
               placeholder="Short description (optional)…"
             />
           </div>
+          <div>
+            <label className="text-sm block mb-1">Release date & time (optional)</label>
+            <input
+              type="datetime-local"
+              className="input"
+              value={releaseAt}
+              onChange={e => setReleaseAt(e.target.value)}
+            />
+            <p className="text-xs text-zinc-600 mt-1">
+              If set in the future, it appears in <strong>Upcoming</strong> with a live countdown.
+            </p>
+          </div>
           {error && <p className="text-red-600 text-sm">{error}</p>}
           <button className="btn" onClick={submit} disabled={!canSubmit}>
             {busy ? 'Publishing…' : 'Publish'}
@@ -107,8 +128,8 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {/* Backup panel (download/import + OPFS save) */}
-
+      {/* Admin-only sentiment insights */}
+      <ReviewInsights />
     </div>
   );
 }

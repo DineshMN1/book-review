@@ -8,44 +8,91 @@
       "role": "admin"
     },
     {
-      "id": "u_alice",
-      "name": "Alice",
-      "email": "alice@example.com",
-      "password": "pass123",
+      "id": "u_ganesh",
+      "name": "Ganesh",
+      "email": "ganesh@example.in",
+      "password": "ganesh123",
+      "role": "user"
+    },
+    {
+      "id": "u_pandu",
+      "name": "Pandu",
+      "email": "pandu@example.in",
+      "password": "pandu123",
       "role": "user"
     }
   ],
   "books": [
     {
-      "id": "b_silent_pages",
-      "title": "The Silent Pages",
-      "author": "A. Grey",
-      "description": "A mystery novel about lost letters.",
+      "id": "b_wings_of_fire",
+      "title": "Wings of Fire",
+      "author": "A.P.J. Abdul Kalam with Arun Tiwari",
+      "description": "An inspiring autobiography from Rameswaram to India’s missile programme, written in simple and uplifting prose.",
       "createdAt": 1710000000000
     },
     {
-      "id": "b_neon_skies",
-      "title": "Neon Skies",
-      "author": "K. Vale",
-      "description": "Cyberpunk adventures over a neon city.",
+      "id": "b_malgudi_days",
+      "title": "Malgudi Days",
+      "author": "R.K. Narayan",
+      "description": "Classic short stories capturing everyday life and gentle humour in the fictional South Indian town of Malgudi.",
       "createdAt": 1710003600000
     },
     {
-      "id": "b_0zecmjd0",
-      "createdAt": 1756217911661,
-      "title": "Hello",
-      "author": "Howru",
-      "description": "wtfff"
+      "id": "b_immortals_of_meluha",
+      "title": "The Immortals of Meluha",
+      "author": "Amish Tripathi",
+      "description": "A mytho-fantasy retelling of Shiva’s journey, blending action, legend, and philosophy in a fast-paced narrative.",
+      "createdAt": 1710007200000
+    },
+    {
+      "id": "b_monsoon_algorithms",
+      "title": "Monsoon Algorithms",
+      "author": "Anika Rao",
+      "description": "A near-future Bengaluru tech drama about startups, ethics, and a deluge of data.",
+      "createdAt": 1756200000000,
+      "releaseAt": 1757000000000
     }
   ],
   "reviews": [
     {
-      "id": "r1",
-      "bookId": "b_silent_pages",
-      "userId": "u_alice",
+      "id": "r_pos_wings_ganesh",
+      "bookId": "b_wings_of_fire",
+      "userId": "u_ganesh",
+      "rating": 5,
+      "text": "Amazing message with excellent clarity — I loved the stories and strongly recommend it to students.",
+      "createdAt": 1756300000000
+    },
+    {
+      "id": "r_pos_malgudi_pandu",
+      "bookId": "b_malgudi_days",
+      "userId": "u_pandu",
       "rating": 4,
-      "text": "Loved the pacing and the twist!",
-      "createdAt": 1710004000000
+      "text": "A wonderful collection with great charm; I enjoyed the warm, everyday moments and the superb simplicity.",
+      "createdAt": 1756300600000
+    },
+    {
+      "id": "r_neu_meluha_ganesh",
+      "bookId": "b_immortals_of_meluha",
+      "userId": "u_ganesh",
+      "rating": 3,
+      "text": "Simple language and steady pace; the plot is clear and the world is easy to follow.",
+      "createdAt": 1756301200000
+    },
+    {
+      "id": "r_neu_wings_pandu",
+      "bookId": "b_wings_of_fire",
+      "userId": "u_pandu",
+      "rating": 3,
+      "text": "Readable and consistent; the narrative stays focused from start to finish.",
+      "createdAt": 1756301800000
+    },
+    {
+      "id": "r_neg_meluha_pandu",
+      "bookId": "b_immortals_of_meluha",
+      "userId": "u_pandu",
+      "rating": 2,
+      "text": "I was disappointed — several boring passages and slow chapters, with a few moments that felt horrible.",
+      "createdAt": 1756302400000
     }
   ],
   "currentUserId": "u_admin"
