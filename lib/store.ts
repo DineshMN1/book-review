@@ -24,20 +24,7 @@ export type Review = {
 
 type Mem = { users: User[]; books: Book[]; reviews: Review[]; currentUserId?: string | null };
 
-
-export async function reloadFromFileNow() {
-  const fileMem = await loadFromFile();
-  if (fileMem) {
-    mem = fileMem;
-    persist();
-    bus.emit(TOPIC.TOAST, { type: 'success', message: 'Reloaded from seed.json' });
-  } else {
-    bus.emit(TOPIC.TOAST, { type: 'error', message: 'seed.json not found or invalid' });
-  }
-}
-
-/* ========== State ========== */
-const KEY = 'brs:data:v3';
+/* ========== State (memory only) ========== */
 let mem: Mem = { users: [], books: [], reviews: [], currentUserId: null };
 
 function uid(prefix = '') {
@@ -72,44 +59,29 @@ async function saveToFile(): Promise<void> {
   }
 }
 
-/* ========== Persistence ========== */
-function persist() {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(KEY, JSON.stringify(mem));
-  // also write to data/seed.json via our API
-  void saveToFile();
-}
-
-async function load() {
-  if (typeof window === 'undefined') return;
-
-  // 1) try LocalStorage cache (fast)
-  const raw = localStorage.getItem(KEY);
-  if (raw) {
-    try {
-      const cached = JSON.parse(raw) as Mem;
-      if (cached && Array.isArray(cached.users) && Array.isArray(cached.books) && Array.isArray(cached.reviews)) {
-        mem = cached;
-        return; // use cached; background save not needed
-      }
-    } catch {
-      // fall through to file
-    }
-  }
-
-  // 2) load from data/seed.json via API
+/* ========== Manual reload helper (from DevTools or a button) ========== */
+export async function reloadFromFileNow() {
   const fileMem = await loadFromFile();
   if (fileMem) {
     mem = fileMem;
+    // No LocalStorage; we keep memory and write only on mutations.
+    bus.emit(TOPIC.TOAST, { type: 'success', message: 'Reloaded from seed.json' });
+    // Optionally notify listeners to re-render if you have a custom hook
+    // bus.emit(TOPIC.DATA, undefined);
   } else {
-    // 3) no prefill/seed — start empty as requested
-    mem = { users: [], books: [], reviews: [], currentUserId: null };
+    bus.emit(TOPIC.TOAST, { type: 'error', message: 'seed.json not found or invalid' });
   }
-
-  persist(); // cache whatever we have
 }
 
-// kick async load on client
+/* ========== Initial load (from file only) ========== */
+async function load() {
+  if (typeof window === 'undefined') return;
+  const fileMem = await loadFromFile();
+  mem = fileMem ?? { users: [], books: [], reviews: [], currentUserId: null };
+  // Do NOT persist here; we only write when something changes.
+  // If you want live updates when editing the file while the app is open,
+  // call reloadFromFileNow() from a refresh button or the console.
+}
 if (typeof window !== 'undefined') {
   void load();
 }
@@ -159,12 +131,12 @@ export function listAllReviews(): Array<{ review: Review; user: User; book: Book
     }));
 }
 
-/* ========== Mutations ========== */
+/* ========== Mutations (write to JSON file only) ========== */
 export function addBook(input: { title: string; author: string; description?: string; releaseAt?: number }) {
   if (!isAdmin()) throw new Error('Only admins can add books');
   const book: Book = { id: uid('b_'), createdAt: Date.now(), ...input };
   mem.books.push(book);
-  persist();
+  void saveToFile();
   bus.emit(TOPIC.BOOK_ADDED, book);
   bus.emit(TOPIC.TOAST, { type: 'success', message: `New book published: ${book.title}` });
   return book;
@@ -174,7 +146,7 @@ export function deleteReview(reviewId: string) {
   const idx = mem.reviews.findIndex(r => r.id === reviewId);
   if (idx >= 0) {
     mem.reviews.splice(idx, 1);
-    persist();
+    void saveToFile();
     bus.emit(TOPIC.TOAST, { type: 'success', message: 'Review deleted' });
   }
 }
@@ -192,18 +164,18 @@ export function addOrUpdateReview(bookId: string, rating: number, text: string) 
   } else {
     mem.reviews.push({ id: uid('r_'), bookId, userId: user.id, rating, text, createdAt: Date.now() });
   }
-  persist();
+  void saveToFile();
   bus.emit(TOPIC.TOAST, { type: 'success', message: 'Review saved' });
 }
 
-/* ========== Auth (local only) ========== */
+/* ========== Auth (persists currentUserId in JSON) ========== */
 export function register(name: string, email: string, password: string) {
   email = email.trim().toLowerCase();
   if (mem.users.some(u => u.email === email)) throw new Error('Email already registered');
   const user: User = { id: uid('u_'), name, email, password, role: 'user' };
   mem.users.push(user);
   mem.currentUserId = user.id;
-  persist();
+  void saveToFile();
   bus.emit(TOPIC.LOGIN, user);
   bus.emit(TOPIC.TOAST, { type: 'success', message: `Welcome, ${user.name}` });
   return user;
@@ -214,7 +186,7 @@ export function login(email: string, password: string) {
   const u = mem.users.find(x => x.email === email && x.password === password);
   if (!u) throw new Error('Invalid credentials');
   mem.currentUserId = u.id;
-  persist();
+  void saveToFile();
   bus.emit(TOPIC.LOGIN, u);
   bus.emit(TOPIC.TOAST, { type: 'success', message: `Signed in as ${u.name}` });
   return u;
@@ -222,7 +194,7 @@ export function login(email: string, password: string) {
 
 export function logout() {
   mem.currentUserId = null;
-  persist();
+  void saveToFile();
   bus.emit(TOPIC.LOGOUT, undefined);
   bus.emit(TOPIC.TOAST, { type: 'info', message: 'Signed out' });
 }
